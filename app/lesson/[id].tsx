@@ -174,7 +174,8 @@ export default function LessonDetailScreen() {
                   <AnimatedPressable
                     style={styles.proUnlockButton}
                     onPress={() => {
-                      console.log('[Lesson] Unlock with Aura Pro pressed');
+                      console.log('[Lesson] Unlock with Aura Pro pressed — navigating to paywall');
+                      router.push('/paywall');
                     }}
                   >
                     <Text style={styles.proUnlockButtonText}>Unlock with Aura Pro</Text>
