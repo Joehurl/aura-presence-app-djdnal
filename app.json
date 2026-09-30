@@ -13,7 +13,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.joehurl.aura",
+      "bundleIdentifier": "com.aura.presence.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
