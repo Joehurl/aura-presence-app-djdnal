@@ -112,6 +112,13 @@ export default function RootLayout() {
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen name="onboarding" options={{ headerShown: false }} />
                 <Stack.Screen
+                  name="paywall"
+                  options={{
+                    headerShown: false,
+                    presentation: 'modal',
+                  }}
+                />
+                <Stack.Screen
                   name="lesson/[id]"
                   options={{
                     headerShown: true,

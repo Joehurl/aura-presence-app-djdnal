@@ -131,8 +131,8 @@ export default function ProfileScreen() {
   };
 
   const handleUpgradePress = () => {
-    console.log('[Profile] Upgrade to Aura Pro pressed');
-    Alert.alert('Aura Pro', 'Premium subscription coming soon. Stay tuned!');
+    console.log('[Profile] Upgrade to Aura Pro pressed — navigating to paywall');
+    router.push('/paywall');
   };
 
   const totalLessons = ALL_LESSONS.length;
