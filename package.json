@@ -88,5 +88,6 @@
   "resolutions": {
     "@expo/prebuild-config": "latest"
   },
-  "private": true
+  "private": true,
+  "packageManager": "yarn@1.22.22"
 }

@@ -3,17 +3,14 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "autoIncrement": true,
-      "bun": "latest"
+      "autoIncrement": true
     },
     "preview": {
       "distribution": "internal",
-      "autoIncrement": true,
-      "bun": "latest"
+      "autoIncrement": true
     },
     "production": {
-      "autoIncrement": true,
-      "bun": "latest"
+      "autoIncrement": true
     }
   }
 }
