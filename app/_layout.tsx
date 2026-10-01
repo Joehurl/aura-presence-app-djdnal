@@ -17,6 +17,7 @@ import {
   DMSans_700Bold,
 } from '@expo-google-fonts/dm-sans';
 import COLORS from '@/constants/Colors';
+import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
 
 const DevErrorBoundary = __DEV__
   ? ErrorBoundary
@@ -107,6 +108,7 @@ export default function RootLayout() {
       <ThemeProvider value={AuraDarkTheme}>
         <SafeAreaProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
+            <SubscriptionProvider>
             <NavigationGuard>
               <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -130,6 +132,7 @@ export default function RootLayout() {
                 />
               </Stack>
             </NavigationGuard>
+            </SubscriptionProvider>
             <SystemBars style="light" />
           </GestureHandlerRootView>
         </SafeAreaProvider>

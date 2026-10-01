@@ -14,6 +14,7 @@ import { BookOpen, Flame, Calendar, Star, ChevronRight, RotateCcw, X } from 'luc
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import COLORS from '@/constants/Colors';
 import { ALL_LESSONS, TRACKS } from '@/constants/lessons';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 interface OnboardingData {
   completed: boolean;
@@ -71,6 +72,7 @@ const PRO_FEATURES = [
 export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { isPro } = useSubscription();
   const [loading, setLoading] = useState(true);
   const [onboardingData, setOnboardingData] = useState<OnboardingData | null>(null);
   const [completedIds, setCompletedIds] = useState<string[]>([]);
@@ -217,29 +219,36 @@ export default function ProfileScreen() {
           <View style={styles.sectionLabel}>
             <Text style={styles.sectionLabelText}>Aura Pro</Text>
           </View>
-          <View style={styles.proCard}>
-            <View style={styles.proCardHeader}>
-              <Star size={20} color="#F59E0B" />
-              <Text style={styles.proCardTitle}>Unlock Your Full Potential</Text>
+          {isPro ? (
+            <View style={styles.proActiveBadge}>
+              <Star size={18} color={COLORS.amber} />
+              <Text style={styles.proActiveBadgeText}>Aura Pro Active ✓</Text>
             </View>
-            <Text style={styles.proCardSubtitle}>
-              Get access to all Pro lessons, unlimited AI coaching, and personalized challenges.
-            </Text>
-            <View style={styles.proFeatureList}>
-              {PRO_FEATURES.map((f, i) => (
-                <View key={i} style={styles.proFeatureItem}>
-                  <Text style={styles.proFeatureIcon}>{f.icon}</Text>
-                  <View style={styles.proFeatureText}>
-                    <Text style={styles.proFeatureTitle}>{f.title}</Text>
-                    <Text style={styles.proFeatureDesc}>{f.desc}</Text>
+          ) : (
+            <View style={styles.proCard}>
+              <View style={styles.proCardHeader}>
+                <Star size={20} color="#F59E0B" />
+                <Text style={styles.proCardTitle}>Unlock Your Full Potential</Text>
+              </View>
+              <Text style={styles.proCardSubtitle}>
+                Get access to all Pro lessons, unlimited AI coaching, and personalized challenges.
+              </Text>
+              <View style={styles.proFeatureList}>
+                {PRO_FEATURES.map((f, i) => (
+                  <View key={i} style={styles.proFeatureItem}>
+                    <Text style={styles.proFeatureIcon}>{f.icon}</Text>
+                    <View style={styles.proFeatureText}>
+                      <Text style={styles.proFeatureTitle}>{f.title}</Text>
+                      <Text style={styles.proFeatureDesc}>{f.desc}</Text>
+                    </View>
                   </View>
-                </View>
-              ))}
+                ))}
+              </View>
+              <AnimatedPressable style={styles.upgradeButton} onPress={handleUpgradePress}>
+                <Text style={styles.upgradeButtonText}>Upgrade to Aura Pro</Text>
+              </AnimatedPressable>
             </View>
-            <AnimatedPressable style={styles.upgradeButton} onPress={handleUpgradePress}>
-              <Text style={styles.upgradeButtonText}>Upgrade to Aura Pro</Text>
-            </AnimatedPressable>
-          </View>
+          )}
         </AnimatedListItem>
 
         {/* Settings */}
@@ -497,6 +506,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'DMSans_400Regular',
     color: COLORS.textSecondary,
+  },
+  proActiveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: COLORS.amberMuted,
+    borderRadius: 14,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(245,158,11,0.25)',
+    marginBottom: 28,
+  },
+  proActiveBadgeText: {
+    fontSize: 16,
+    fontFamily: 'DMSans_600SemiBold',
+    color: COLORS.amber,
   },
   upgradeButton: {
     backgroundColor: COLORS.primary,

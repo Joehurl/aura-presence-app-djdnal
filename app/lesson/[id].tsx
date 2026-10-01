@@ -13,6 +13,7 @@ import { Clock, Lock, Check } from 'lucide-react-native';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import COLORS from '@/constants/Colors';
 import { getLessonById } from '@/constants/lessons';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 export default function LessonDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -24,6 +25,7 @@ export default function LessonDetailScreen() {
   const completedAnim = useRef(new Animated.Value(0)).current;
   const contentFade = useRef(new Animated.Value(0)).current;
 
+  const { isPro } = useSubscription();
   const result = getLessonById(id ?? '');
 
   useEffect(() => {
@@ -98,7 +100,7 @@ export default function LessonDetailScreen() {
   }
 
   const { lesson, pillar } = result;
-  const isProLocked = lesson.isPro;
+  const isProLocked = lesson.isPro && !isPro;
   const isCorrect = selectedAnswer === lesson.checkpointAnswer;
 
   const paragraphs = lesson.content.split('\n\n').filter(Boolean);

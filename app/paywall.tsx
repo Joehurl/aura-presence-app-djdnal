@@ -9,19 +9,21 @@ import {
   Pressable,
   ActivityIndicator,
   Platform,
+  Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
-import Purchases, { PurchasesPackage } from 'react-native-purchases';
+import Purchases, { PurchasesPackage, PACKAGE_TYPE } from 'react-native-purchases';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import COLORS from '@/constants/Colors';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
-// ---------------------------------------------------------------------------
-// RevenueCat API keys — replace with your actual keys from the RC dashboard
-// ---------------------------------------------------------------------------
-const RC_API_KEY_IOS = 'appl_REPLACE_WITH_YOUR_REVENUECAT_IOS_KEY';
-const RC_API_KEY_ANDROID = 'goog_REPLACE_WITH_YOUR_REVENUECAT_ANDROID_KEY';
+const RC_API_KEY_IOS = 'appl_test_cBPclOppZOBTYIneGfCMeOfsrQf';
+const RC_API_KEY_ANDROID = 'appl_test_cBPclOppZOBTYIneGfCMeOfsrQf';
+const ENTITLEMENT_ID = 'pro';
+
+let configured = false;
 
 type Plan = 'monthly' | 'yearly';
 
@@ -35,8 +37,11 @@ const FEATURES = [
 export default function PaywallScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { setIsPro } = useSubscription();
+
   const [selectedPlan, setSelectedPlan] = useState<Plan>('yearly');
-  const [packages, setPackages] = useState<PurchasesPackage[]>([]);
+  const [annualPkg, setAnnualPkg] = useState<PurchasesPackage | null>(null);
+  const [monthlyPkg, setMonthlyPkg] = useState<PurchasesPackage | null>(null);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState(false);
   const [restoring, setRestoring] = useState(false);
@@ -44,18 +49,33 @@ export default function PaywallScreen() {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(32)).current;
 
-  // Configure RevenueCat and fetch offerings on mount
   useEffect(() => {
     const initRC = async () => {
       try {
-        const apiKey =
-          Platform.OS === 'ios' ? RC_API_KEY_IOS : RC_API_KEY_ANDROID;
-        Purchases.configure({ apiKey });
+        if (!configured) {
+          const apiKey = Platform.OS === 'ios' ? RC_API_KEY_IOS : RC_API_KEY_ANDROID;
+          console.log('[Paywall] Configuring RevenueCat');
+          Purchases.configure({ apiKey });
+          configured = true;
+        }
 
+        console.log('[Paywall] Fetching offerings');
         const offerings = await Purchases.getOfferings();
         const current = offerings.current;
-        if (current && current.availablePackages.length > 0) {
-          setPackages(current.availablePackages);
+        if (current) {
+          const annual = current.availablePackages.find(
+            (pkg) => pkg.packageType === PACKAGE_TYPE.ANNUAL
+          ) ?? null;
+          const monthly = current.availablePackages.find(
+            (pkg) => pkg.packageType === PACKAGE_TYPE.MONTHLY
+          ) ?? null;
+          console.log(
+            `[Paywall] Offerings loaded. Annual: ${annual?.product.priceString ?? 'none'}, Monthly: ${monthly?.product.priceString ?? 'none'}`
+          );
+          setAnnualPkg(annual);
+          setMonthlyPkg(monthly);
+        } else {
+          console.warn('[Paywall] No current offering found');
         }
       } catch (e) {
         console.warn('[Paywall] RC init error:', e);
@@ -67,59 +87,47 @@ export default function PaywallScreen() {
     initRC();
 
     Animated.parallel([
-      Animated.timing(opacity, {
-        toValue: 1,
-        duration: 380,
-        useNativeDriver: true,
-      }),
-      Animated.timing(translateY, {
-        toValue: 0,
-        duration: 380,
-        useNativeDriver: true,
-      }),
+      Animated.timing(opacity, { toValue: 1, duration: 380, useNativeDriver: true }),
+      Animated.timing(translateY, { toValue: 0, duration: 380, useNativeDriver: true }),
     ]).start();
   }, []);
 
   const handleClose = () => {
+    console.log('[Paywall] Close button pressed');
     router.back();
   };
 
   const handleSelectPlan = (plan: Plan) => {
+    console.log(`[Paywall] Plan selected: ${plan}`);
     setSelectedPlan(plan);
   };
 
-  // Find the RC package that matches the selected plan
-  const getPackageForPlan = (plan: Plan): PurchasesPackage | undefined => {
-    return packages.find((pkg) => {
-      const id = pkg.packageType.toLowerCase();
-      if (plan === 'monthly') return id.includes('monthly') || id.includes('month');
-      if (plan === 'yearly') return id.includes('annual') || id.includes('year');
-      return false;
-    }) ?? packages[0];
-  };
-
   const handleSubscribe = async () => {
+    const pkg = selectedPlan === 'yearly' ? annualPkg : monthlyPkg;
+    console.log(`[Paywall] Subscribe pressed. Plan: ${selectedPlan}, package: ${pkg?.identifier ?? 'none'}`);
+    if (!pkg) {
+      Alert.alert(
+        'Products Unavailable',
+        'Subscription products could not be loaded. Please check your connection and try again.'
+      );
+      return;
+    }
     setPurchasing(true);
     try {
-      const pkg = getPackageForPlan(selectedPlan);
-      if (!pkg) {
-        Alert.alert(
-          'Products Unavailable',
-          'Subscription products could not be loaded. Please check your connection and try again.'
-        );
-        return;
-      }
       const { customerInfo } = await Purchases.purchasePackage(pkg);
-      const isActive =
-        typeof customerInfo.entitlements.active['pro'] !== 'undefined';
+      console.log('[Paywall] Purchase completed. Checking entitlement...');
+      const isActive = typeof customerInfo.entitlements.active[ENTITLEMENT_ID] !== 'undefined';
       if (isActive) {
-        Alert.alert('Welcome to Aura Pro! 🎉', 'Your subscription is now active.', [
-          { text: 'Get Started', onPress: () => router.back() },
-        ]);
+        console.log('[Paywall] Entitlement active — setting isPro and navigating back');
+        setIsPro(true);
+        router.back();
       }
     } catch (e: any) {
       if (!e.userCancelled) {
+        console.warn('[Paywall] Purchase failed:', e.message);
         Alert.alert('Purchase Failed', e.message ?? 'Something went wrong. Please try again.');
+      } else {
+        console.log('[Paywall] Purchase cancelled by user');
       }
     } finally {
       setPurchasing(false);
@@ -127,15 +135,16 @@ export default function PaywallScreen() {
   };
 
   const handleRestore = async () => {
+    console.log('[Paywall] Restore purchases pressed');
     setRestoring(true);
     try {
       const customerInfo = await Purchases.restorePurchases();
-      const isActive =
-        typeof customerInfo.entitlements.active['pro'] !== 'undefined';
+      console.log('[Paywall] Restore completed. Checking entitlement...');
+      const isActive = typeof customerInfo.entitlements.active[ENTITLEMENT_ID] !== 'undefined';
       if (isActive) {
-        Alert.alert('Purchases Restored', 'Your Aura Pro subscription has been restored.', [
-          { text: 'Continue', onPress: () => router.back() },
-        ]);
+        console.log('[Paywall] Entitlement active after restore — setting isPro and navigating back');
+        setIsPro(true);
+        router.back();
       } else {
         Alert.alert(
           'No Active Subscription Found',
@@ -143,19 +152,43 @@ export default function PaywallScreen() {
         );
       }
     } catch (e: any) {
+      console.warn('[Paywall] Restore failed:', e.message);
       Alert.alert('Restore Failed', e.message ?? 'Something went wrong. Please try again.');
     } finally {
       setRestoring(false);
     }
   };
 
-  const isMonthly = selectedPlan === 'monthly';
-  const isYearly = selectedPlan === 'yearly';
+  const handleTermsPress = () => {
+    console.log('[Paywall] Terms of Use pressed');
+    Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/');
+  };
+
+  const handlePrivacyPress = () => {
+    console.log('[Paywall] Privacy Policy pressed');
+    Linking.openURL('https://aurapresence.app/privacy');
+  };
+
   const isBusy = purchasing || restoring;
 
+  const annualPrice = annualPkg?.product.priceString ?? '—';
+  const monthlyPrice = monthlyPkg?.product.priceString ?? '—';
+
+  const annualRawPrice = annualPkg?.product.price ?? 0;
+  const monthlyRawPrice = monthlyPkg?.product.price ?? 0;
+  const savePercent =
+    annualRawPrice > 0 && monthlyRawPrice > 0
+      ? Math.round((1 - annualRawPrice / 12 / monthlyRawPrice) * 100)
+      : null;
+
+  const ctaLabel = selectedPlan === 'yearly' ? 'Start Annual Plan' : 'Start Monthly Plan';
+
+  const isMonthly = selectedPlan === 'monthly';
+  const isYearly = selectedPlan === 'yearly';
+
   return (
-    <View style={[styles.root, { paddingTop: insets.top }]}>
-      {/* Close button */}
+    <View style={styles.root}>
+      {/* Close button — absolute, always on top */}
       <Pressable
         style={[styles.closeButton, { top: insets.top + 12 }]}
         onPress={handleClose}
@@ -165,14 +198,16 @@ export default function PaywallScreen() {
         <X size={20} color={COLORS.textSecondary} />
       </Pressable>
 
+      {/* Scrollable content */}
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 32 }]}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Animated.View style={[styles.content, { opacity, transform: [{ translateY }] }]}>
+        <Animated.View style={[styles.animatedContent, { opacity, transform: [{ translateY }] }]}>
 
-          {/* Hero */}
-          <View style={styles.hero}>
+          {/* Hero — paddingTop ensures it clears the close button */}
+          <View style={[styles.hero, { paddingTop: insets.top + 60 }]}>
             <Text style={styles.heroEmoji}>✦</Text>
             <Text style={styles.heroTitle}>Aura Pro</Text>
             <Text style={styles.heroSubtitle}>Unlock your full presence potential</Text>
@@ -212,7 +247,7 @@ export default function PaywallScreen() {
                 <View style={styles.planBadge}>
                   <Text style={styles.planBadgeText}>Most Flexible</Text>
                 </View>
-                <Text style={styles.planPrice}>$9.99</Text>
+                <Text style={styles.planPrice}>{monthlyPrice}</Text>
                 <Text style={styles.planPeriod}>/ month</Text>
               </AnimatedPressable>
 
@@ -229,51 +264,64 @@ export default function PaywallScreen() {
                 <View style={[styles.planBadge, styles.planBadgeBestValue]}>
                   <Text style={[styles.planBadgeText, styles.planBadgeBestValueText]}>Best Value</Text>
                 </View>
-                <Text style={styles.planPrice}>$89.99</Text>
+                <Text style={styles.planPrice}>{annualPrice}</Text>
                 <Text style={styles.planPeriod}>/ year</Text>
-                <View style={styles.saveBadge}>
-                  <Text style={styles.saveBadgeText}>Save 25%</Text>
-                </View>
+                {savePercent !== null && savePercent > 0 && (
+                  <View style={styles.saveBadge}>
+                    <Text style={styles.saveBadgeText}>Save {savePercent}%</Text>
+                  </View>
+                )}
               </AnimatedPressable>
             </View>
           )}
 
-          {/* CTA */}
-          <AnimatedPressable
-            style={[styles.ctaButton, isBusy && styles.ctaButtonDisabled]}
-            onPress={handleSubscribe}
-            scaleValue={0.97}
-            disabled={isBusy || loading}
-          >
-            {purchasing ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.ctaText}>Start Free Trial</Text>
-            )}
-          </AnimatedPressable>
-
-          {/* Restore Purchases — required by Apple Guideline 3.1.1 */}
-          <Pressable
-            style={styles.restoreButton}
-            onPress={handleRestore}
-            disabled={isBusy}
-            hitSlop={8}
-          >
-            {restoring ? (
-              <ActivityIndicator size="small" color={COLORS.textSecondary} />
-            ) : (
-              <Text style={styles.restoreText}>Restore Purchases</Text>
-            )}
-          </Pressable>
-
-          {/* Fine print */}
-          <Text style={styles.finePrint}>
-            Cancel anytime. Billed through the App Store.{'\n'}
-            Subscription auto-renews unless cancelled at least 24 hours before the end of the current period.
-          </Text>
-
         </Animated.View>
       </ScrollView>
+
+      {/* Sticky bottom section — always visible */}
+      <View style={[styles.stickyBottom, { paddingBottom: insets.bottom + 16 }]}>
+        {/* CTA */}
+        <AnimatedPressable
+          style={[styles.ctaButton, isBusy && styles.ctaButtonDisabled]}
+          onPress={handleSubscribe}
+          scaleValue={0.97}
+          disabled={isBusy || loading}
+        >
+          {purchasing ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.ctaText}>{ctaLabel}</Text>
+          )}
+        </AnimatedPressable>
+
+        {/* Restore */}
+        <Pressable
+          style={styles.restoreButton}
+          onPress={handleRestore}
+          disabled={isBusy}
+          hitSlop={8}
+        >
+          {restoring ? (
+            <ActivityIndicator size="small" color={COLORS.textSecondary} />
+          ) : (
+            <Text style={styles.restoreText}>Restore Purchases</Text>
+          )}
+        </Pressable>
+
+        {/* Fine print */}
+        <Text style={styles.finePrint}>Auto-renews until canceled. Cancel anytime.</Text>
+
+        {/* Links */}
+        <View style={styles.linksRow}>
+          <Pressable onPress={handleTermsPress} hitSlop={8}>
+            <Text style={styles.linkText}>Terms of Use</Text>
+          </Pressable>
+          <Text style={styles.linkSeparator}>·</Text>
+          <Pressable onPress={handlePrivacyPress} hitSlop={8}>
+            <Text style={styles.linkText}>Privacy Policy</Text>
+          </Pressable>
+        </View>
+      </View>
     </View>
   );
 }
@@ -296,12 +344,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  scroll: {
-    flexGrow: 1,
+  scrollView: {
+    flex: 1,
   },
-  content: {
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 24,
+  },
+  animatedContent: {
     paddingHorizontal: 24,
-    paddingTop: 72,
     gap: 28,
   },
   // Hero
@@ -449,6 +500,15 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_600SemiBold',
     color: COLORS.amber,
   },
+  // Sticky bottom
+  stickyBottom: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    backgroundColor: COLORS.background,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    gap: 10,
+  },
   // CTA
   ctaButton: {
     backgroundColor: COLORS.primary,
@@ -470,10 +530,9 @@ const styles = StyleSheet.create({
   // Restore
   restoreButton: {
     alignItems: 'center',
-    paddingVertical: 8,
-    minHeight: 36,
+    paddingVertical: 4,
+    minHeight: 32,
     justifyContent: 'center',
-    marginTop: -12,
   },
   restoreText: {
     fontSize: 14,
@@ -488,6 +547,22 @@ const styles = StyleSheet.create({
     color: COLORS.textTertiary,
     textAlign: 'center',
     lineHeight: 18,
-    marginTop: -8,
+  },
+  // Links
+  linksRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  linkText: {
+    fontSize: 12,
+    fontFamily: 'DMSans_400Regular',
+    color: COLORS.textTertiary,
+    textDecorationLine: 'underline',
+  },
+  linkSeparator: {
+    fontSize: 12,
+    color: COLORS.textTertiary,
   },
 });
