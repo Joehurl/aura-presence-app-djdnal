@@ -17,7 +17,7 @@ import { X } from 'lucide-react-native';
 import Purchases, { PurchasesPackage, PACKAGE_TYPE } from 'react-native-purchases';
 import Constants from 'expo-constants';
 
-const IS_EXPO_GO = Constants.appOwnership === 'expo';
+const IS_UNSUPPORTED = Platform.OS === 'web' || Constants.appOwnership === 'expo';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import COLORS from '@/constants/Colors';
 import { useSubscription } from '@/contexts/SubscriptionContext';
@@ -236,7 +236,7 @@ export default function PaywallScreen() {
           </View>
 
           {/* Plan selector */}
-          {IS_EXPO_GO ? (
+          {IS_UNSUPPORTED ? (
             <View style={styles.previewBanner}>
               <Text style={styles.previewBannerText}>
                 Subscriptions unavailable in preview — use a development build

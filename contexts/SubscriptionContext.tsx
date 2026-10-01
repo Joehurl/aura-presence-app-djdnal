@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 import Purchases, { CustomerInfo } from 'react-native-purchases';
 import Constants from 'expo-constants';
 
-const IS_EXPO_GO = Constants.appOwnership === 'expo';
+const IS_UNSUPPORTED = Platform.OS === 'web' || Constants.appOwnership === 'expo';
 
 const RC_API_KEY_IOS = 'appl_test_cBPclOppZOBTYIneGfCMeOfsrQf';
 const RC_API_KEY_ANDROID = 'appl_test_cBPclOppZOBTYIneGfCMeOfsrQf';
@@ -31,8 +31,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
-    if (IS_EXPO_GO) {
-      console.log('[Subscription] Expo Go detected — skipping RevenueCat init, isPro=false');
+    if (IS_UNSUPPORTED) {
+      console.log('[Subscription] Web/Expo Go detected — skipping RevenueCat init, isPro=false');
       return;
     }
 
