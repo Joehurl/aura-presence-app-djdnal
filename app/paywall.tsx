@@ -299,47 +299,55 @@ export default function PaywallScreen() {
 
       {/* Sticky bottom section — always visible */}
       <View style={[styles.stickyBottom, { paddingBottom: insets.bottom + 16 }]}>
-        {/* CTA */}
-        <AnimatedPressable
-          style={[styles.ctaButton, isBusy && styles.ctaButtonDisabled]}
-          onPress={handleSubscribe}
-          scaleValue={0.97}
-          disabled={isBusy || loading}
-        >
-          {purchasing ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.ctaText}>{ctaLabel}</Text>
-          )}
-        </AnimatedPressable>
+        {IS_UNSUPPORTED ? (
+          <Text style={{ color: COLORS.textSecondary, textAlign: 'center', fontSize: 13, paddingHorizontal: 24 }}>
+            Download the Aura app on iOS or Android to subscribe.
+          </Text>
+        ) : (
+          <>
+            {/* CTA */}
+            <AnimatedPressable
+              style={[styles.ctaButton, isBusy && styles.ctaButtonDisabled]}
+              onPress={handleSubscribe}
+              scaleValue={0.97}
+              disabled={isBusy || loading}
+            >
+              {purchasing ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.ctaText}>{ctaLabel}</Text>
+              )}
+            </AnimatedPressable>
 
-        {/* Restore */}
-        <Pressable
-          style={styles.restoreButton}
-          onPress={handleRestore}
-          disabled={isBusy}
-          hitSlop={8}
-        >
-          {restoring ? (
-            <ActivityIndicator size="small" color={COLORS.textSecondary} />
-          ) : (
-            <Text style={styles.restoreText}>Restore Purchases</Text>
-          )}
-        </Pressable>
+            {/* Restore */}
+            <Pressable
+              style={styles.restoreButton}
+              onPress={handleRestore}
+              disabled={isBusy}
+              hitSlop={8}
+            >
+              {restoring ? (
+                <ActivityIndicator size="small" color={COLORS.textSecondary} />
+              ) : (
+                <Text style={styles.restoreText}>Restore Purchases</Text>
+              )}
+            </Pressable>
 
-        {/* Fine print */}
-        <Text style={styles.finePrint}>Auto-renews until canceled. Cancel anytime.</Text>
+            {/* Fine print */}
+            <Text style={styles.finePrint}>Auto-renews until canceled. Cancel anytime.</Text>
 
-        {/* Links */}
-        <View style={styles.linksRow}>
-          <Pressable onPress={handleTermsPress} hitSlop={8}>
-            <Text style={styles.linkText}>Terms of Use</Text>
-          </Pressable>
-          <Text style={styles.linkSeparator}>·</Text>
-          <Pressable onPress={handlePrivacyPress} hitSlop={8}>
-            <Text style={styles.linkText}>Privacy Policy</Text>
-          </Pressable>
-        </View>
+            {/* Links */}
+            <View style={styles.linksRow}>
+              <Pressable onPress={handleTermsPress} hitSlop={8}>
+                <Text style={styles.linkText}>Terms of Use</Text>
+              </Pressable>
+              <Text style={styles.linkSeparator}>·</Text>
+              <Pressable onPress={handlePrivacyPress} hitSlop={8}>
+                <Text style={styles.linkText}>Privacy Policy</Text>
+              </Pressable>
+            </View>
+          </>
+        )}
       </View>
     </View>
   );
