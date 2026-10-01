@@ -16,11 +16,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
 import Purchases, { PurchasesPackage, PACKAGE_TYPE } from 'react-native-purchases';
 import Constants from 'expo-constants';
-
-const IS_UNSUPPORTED = Platform.OS === 'web' || Constants.appOwnership === 'expo';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import COLORS from '@/constants/Colors';
 import { useSubscription } from '@/contexts/SubscriptionContext';
+
+const IS_UNSUPPORTED = Platform.OS === 'web' || Constants.appOwnership === 'expo';
 
 const RC_API_KEY_IOS = 'appl_test_cBPclOppZOBTYIneGfCMeOfsrQf';
 const RC_API_KEY_ANDROID = 'appl_test_cBPclOppZOBTYIneGfCMeOfsrQf';
@@ -54,7 +54,7 @@ export default function PaywallScreen() {
 
   useEffect(() => {
     const initRC = async () => {
-      if (IS_EXPO_GO) {
+      if (IS_UNSUPPORTED) {
         console.log('[Paywall] Expo Go detected — skipping RevenueCat init, packages will be empty');
         setLoading(false);
         return;
