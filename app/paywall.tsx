@@ -116,8 +116,8 @@ export default function PaywallScreen() {
     console.log(`[Paywall] Subscribe pressed. Plan: ${selectedPlan}, package: ${pkg?.identifier ?? 'none'}`);
     if (!pkg) {
       Alert.alert(
-        'Products Unavailable',
-        'Subscription products could not be loaded. Please check your connection and try again.'
+        'Native Build Required',
+        'Subscriptions are only available on iOS and Android. Download the app to subscribe.'
       );
       return;
     }
@@ -145,6 +145,10 @@ export default function PaywallScreen() {
 
   const handleRestore = async () => {
     console.log('[Paywall] Restore purchases pressed');
+    if (IS_UNSUPPORTED) {
+      Alert.alert('Native Build Required', 'Subscriptions are only available on iOS and Android.');
+      return;
+    }
     setRestoring(true);
     try {
       const customerInfo = await Purchases.restorePurchases();
