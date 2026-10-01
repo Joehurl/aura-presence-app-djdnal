@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import Purchases, { CustomerInfo } from 'react-native-purchases';
+import Constants from 'expo-constants';
+
+const IS_EXPO_GO = Constants.appOwnership === 'expo';
 
 const RC_API_KEY_IOS = 'appl_test_cBPclOppZOBTYIneGfCMeOfsrQf';
 const RC_API_KEY_ANDROID = 'appl_test_cBPclOppZOBTYIneGfCMeOfsrQf';
@@ -28,6 +31,11 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [isPro, setIsPro] = useState(false);
 
   useEffect(() => {
+    if (IS_EXPO_GO) {
+      console.log('[Subscription] Expo Go detected — skipping RevenueCat init, isPro=false');
+      return;
+    }
+
     const apiKey = Platform.OS === 'ios' ? RC_API_KEY_IOS : RC_API_KEY_ANDROID;
     console.log('[Subscription] Configuring RevenueCat');
     Purchases.configure({ apiKey });

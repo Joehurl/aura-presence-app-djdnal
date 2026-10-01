@@ -15,6 +15,9 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
 import Purchases, { PurchasesPackage, PACKAGE_TYPE } from 'react-native-purchases';
+import Constants from 'expo-constants';
+
+const IS_EXPO_GO = Constants.appOwnership === 'expo';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import COLORS from '@/constants/Colors';
 import { useSubscription } from '@/contexts/SubscriptionContext';
@@ -51,6 +54,12 @@ export default function PaywallScreen() {
 
   useEffect(() => {
     const initRC = async () => {
+      if (IS_EXPO_GO) {
+        console.log('[Paywall] Expo Go detected — skipping RevenueCat init, packages will be empty');
+        setLoading(false);
+        return;
+      }
+
       try {
         if (!configured) {
           const apiKey = Platform.OS === 'ios' ? RC_API_KEY_IOS : RC_API_KEY_ANDROID;
@@ -227,7 +236,13 @@ export default function PaywallScreen() {
           </View>
 
           {/* Plan selector */}
-          {loading ? (
+          {IS_EXPO_GO ? (
+            <View style={styles.previewBanner}>
+              <Text style={styles.previewBannerText}>
+                Subscriptions unavailable in preview — use a development build
+              </Text>
+            </View>
+          ) : loading ? (
             <View style={styles.loadingRow}>
               <ActivityIndicator color={COLORS.primary} />
               <Text style={styles.loadingText}>Loading plans…</Text>
@@ -419,6 +434,23 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'DMSans_500Medium',
     color: COLORS.text,
+  },
+  // Preview banner (Expo Go)
+  previewBanner: {
+    backgroundColor: COLORS.surfaceSecondary,
+    borderRadius: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+  },
+  previewBannerText: {
+    fontSize: 14,
+    fontFamily: 'DMSans_500Medium',
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   // Loading
   loadingRow: {
