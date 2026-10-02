@@ -33,7 +33,6 @@ android/
 ios/
 
 package-lock.json
-yarn.lock
 # Python
 .venv/
 venv/
@@ -70,3 +69,5 @@ htmlcov/
 .cache/
 build/
 next-env.d.ts
+
+yarn.lock
