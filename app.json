@@ -42,7 +42,8 @@
       [
         "onesignal-expo-plugin",
         {
-          "mode": "production"
+          "mode": "production",
+          "appGroupName": "group.com.aura.presence.app.onesignal"
         }
       ],
       "expo-font",
