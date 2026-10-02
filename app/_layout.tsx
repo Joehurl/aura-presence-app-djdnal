@@ -18,7 +18,6 @@ import {
 } from '@expo-google-fonts/dm-sans';
 import COLORS from '@/constants/Colors';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
-import { NotificationProvider } from "@/contexts/NotificationContext";
 
 const DevErrorBoundary = __DEV__
   ? ErrorBoundary
@@ -104,42 +103,40 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <NotificationProvider>
-      <DevErrorBoundary>
+    <DevErrorBoundary>
       <StatusBar style="light" animated />
       <ThemeProvider value={AuraDarkTheme}>
         <SafeAreaProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
             <SubscriptionProvider>
-            <NavigationGuard>
-              <Stack>
-                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-                <Stack.Screen
-                  name="paywall"
-                  options={{
-                    headerShown: false,
-                    presentation: 'modal',
-                  }}
-                />
-                <Stack.Screen
-                  name="lesson/[id]"
-                  options={{
-                    headerShown: true,
-                    headerTransparent: true,
-                    headerTitle: '',
-                    headerBackButtonDisplayMode: 'minimal',
-                    headerTintColor: COLORS.text,
-                  }}
-                />
-              </Stack>
-            </NavigationGuard>
+              <NavigationGuard>
+                <Stack>
+                  <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                  <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+                  <Stack.Screen
+                    name="paywall"
+                    options={{
+                      headerShown: false,
+                      presentation: 'modal',
+                    }}
+                  />
+                  <Stack.Screen
+                    name="lesson/[id]"
+                    options={{
+                      headerShown: true,
+                      headerTransparent: true,
+                      headerTitle: '',
+                      headerBackButtonDisplayMode: 'minimal',
+                      headerTintColor: COLORS.text,
+                    }}
+                  />
+                </Stack>
+              </NavigationGuard>
             </SubscriptionProvider>
             <SystemBars style="light" />
           </GestureHandlerRootView>
         </SafeAreaProvider>
       </ThemeProvider>
     </DevErrorBoundary>
-    </NotificationProvider>
   );
 }

@@ -15,13 +15,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.aura.presence.app",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false,
-        "UIBackgroundModes": [
-          "remote-notification"
-        ]
-      },
-      "entitlements": {
-        "aps-environment": "production"
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -36,10 +30,6 @@
       "bundler": "metro"
     },
     "plugins": [
-      [
-        "onesignal-expo-plugin",
-        { "mode": "production" }
-      ],
       "expo-font",
       "expo-router",
       "expo-web-browser",
@@ -50,8 +40,7 @@
       "typedRoutes": true
     },
     "extra": {
-      "router": {},
-      "oneSignalAppId": "d16df8fd-844a-4fde-b8b0-a60e9ed405ea"
-    },
+      "router": {}
+    }
   }
 }
