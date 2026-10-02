@@ -59,15 +59,5 @@
       "router": {},
       "oneSignalAppId": "d16df8fd-844a-4fde-b8b0-a60e9ed405ea"
     },
-    "install": {
-      "exclude": [
-        "@react-native-community/datetimepicker",
-        "react-native-gesture-handler",
-        "react-native-safe-area-context",
-        "react-native-svg",
-        "react-native-webview",
-        "react-native"
-      ]
-    }
   }
 }
