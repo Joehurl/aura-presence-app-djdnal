@@ -21,10 +21,7 @@
         ]
       },
       "entitlements": {
-        "aps-environment": "production",
-        "com.apple.security.application-groups": [
-          "group.com.aura.presence.app.onesignal"
-        ]
+        "aps-environment": "production"
       }
     },
     "android": {
@@ -41,10 +38,7 @@
     "plugins": [
       [
         "onesignal-expo-plugin",
-        {
-          "mode": "production",
-          "appGroupName": "group.com.aura.presence.app.onesignal"
-        }
+        { "mode": "production" }
       ],
       "expo-font",
       "expo-router",
