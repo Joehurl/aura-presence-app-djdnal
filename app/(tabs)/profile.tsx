@@ -10,7 +10,7 @@ import {
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BookOpen, Flame, Calendar, Star, ChevronRight, RotateCcw, X } from 'lucide-react-native';
+import { BookOpen, Flame, Calendar, Star, ChevronRight, RotateCcw, X, Bell } from 'lucide-react-native';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import COLORS from '@/constants/Colors';
 import { ALL_LESSONS, TRACKS } from '@/constants/lessons';
@@ -257,6 +257,22 @@ export default function ProfileScreen() {
             <Text style={styles.sectionLabelText}>Settings</Text>
           </View>
           <View style={styles.settingsCard}>
+            <AnimatedPressable
+              style={styles.settingsItem}
+              onPress={() => {
+                console.log('[Profile] Notification preferences tapped');
+                router.push('/notification-preferences');
+              }}
+            >
+              <View style={styles.settingsItemLeft}>
+                <Bell size={18} color={COLORS.textSecondary} />
+                <Text style={styles.settingsItemText}>Notifications</Text>
+              </View>
+              <ChevronRight size={16} color={COLORS.textTertiary} />
+            </AnimatedPressable>
+
+            <View style={styles.settingsDivider} />
+
             <AnimatedPressable
               style={styles.settingsItem}
               onPress={() => {

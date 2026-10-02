@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Lock, Clock, ChevronRight, Sparkles } from 'lucide-react-native';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
+import { NotificationBell } from "@/components/NotificationBell";
 import COLORS from '@/constants/Colors';
 import { PILLARS, ALL_LESSONS, type Pillar, type Lesson } from '@/constants/lessons';
 
@@ -255,9 +256,12 @@ export default function LearnScreen() {
             </View>
           </View>
         </View>
-        <View style={styles.streakBadge}>
-          <Text style={styles.streakEmoji}>🔥</Text>
-          <Text style={styles.streakCount}>{completedIds.length}</Text>
+        <View style={styles.headerRight}>
+          <NotificationBell />
+          <View style={styles.streakBadge}>
+            <Text style={styles.streakEmoji}>🔥</Text>
+            <Text style={styles.streakCount}>{completedIds.length}</Text>
+          </View>
         </View>
       </Animated.View>
 
@@ -353,6 +357,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'DMSans_600SemiBold',
     color: COLORS.primary,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   streakBadge: {
     flexDirection: 'row',

@@ -18,6 +18,7 @@ import {
 } from '@expo-google-fonts/dm-sans';
 import COLORS from '@/constants/Colors';
 import { SubscriptionProvider } from '@/contexts/SubscriptionContext';
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 const DevErrorBoundary = __DEV__
   ? ErrorBoundary
@@ -103,7 +104,8 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <DevErrorBoundary>
+    <NotificationProvider>
+      <DevErrorBoundary>
       <StatusBar style="light" animated />
       <ThemeProvider value={AuraDarkTheme}>
         <SafeAreaProvider>
@@ -138,5 +140,6 @@ export default function RootLayout() {
         </SafeAreaProvider>
       </ThemeProvider>
     </DevErrorBoundary>
+    </NotificationProvider>
   );
 }
