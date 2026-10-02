@@ -22,8 +22,8 @@ import { useSubscription } from '@/contexts/SubscriptionContext';
 
 const IS_UNSUPPORTED = Platform.OS === 'web' || Constants.appOwnership === 'expo';
 
-const RC_API_KEY_IOS = 'appl_test_cBPclOppZOBTYIneGfCMeOfsrQf';
-const RC_API_KEY_ANDROID = 'appl_test_cBPclOppZOBTYIneGfCMeOfsrQf';
+const RC_API_KEY_IOS = 'appl_lWVbIUUwEgCuvkpJwblllsJwXkz';
+const RC_API_KEY_ANDROID = 'appl_lWVbIUUwEgCuvkpJwblllsJwXkz';
 const ENTITLEMENT_ID = 'pro';
 
 let configured = false;
