@@ -84,7 +84,7 @@ export default function PaywallScreen() {
           setAnnualPkg(annual);
           setMonthlyPkg(monthly);
         } else {
-          console.warn('[Paywall] No current offering found');
+          console.warn('[Paywall] No current offering found — check RevenueCat dashboard: products configured, entitlement linked, app store sandbox products approved');
         }
       } catch (e) {
         console.warn('[Paywall] RC init error:', e);
@@ -115,10 +115,7 @@ export default function PaywallScreen() {
     const pkg = selectedPlan === 'yearly' ? annualPkg : monthlyPkg;
     console.log(`[Paywall] Subscribe pressed. Plan: ${selectedPlan}, package: ${pkg?.identifier ?? 'none'}`);
     if (!pkg) {
-      Alert.alert(
-        'Native Build Required',
-        'Subscriptions are only available on iOS and Android. Download the app to subscribe.'
-      );
+      Alert.alert('Plans Unavailable', 'Could not load subscription plans. Please close and reopen the paywall, or check your internet connection.');
       return;
     }
     setPurchasing(true);
@@ -146,7 +143,7 @@ export default function PaywallScreen() {
   const handleRestore = async () => {
     console.log('[Paywall] Restore purchases pressed');
     if (IS_UNSUPPORTED) {
-      Alert.alert('Native Build Required', 'Subscriptions are only available on iOS and Android.');
+      Alert.alert('Unavailable', 'Could not connect to the subscription service. Please try again.');
       return;
     }
     setRestoring(true);
