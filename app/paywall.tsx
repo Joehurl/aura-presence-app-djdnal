@@ -14,7 +14,7 @@ import {
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
-import Purchases, { PurchasesPackage, PACKAGE_TYPE } from 'react-native-purchases';
+import Purchases, { PurchasesPackage, LOG_LEVEL } from 'react-native-purchases';
 import Constants from 'expo-constants';
 import { AnimatedPressable } from '@/components/AnimatedPressable';
 import COLORS from '@/constants/Colors';
@@ -68,16 +68,19 @@ export default function PaywallScreen() {
           configured = true;
         }
 
+        Purchases.setLogLevel(LOG_LEVEL.DEBUG);
         console.log('[Paywall] Fetching offerings');
         const offerings = await Purchases.getOfferings();
+        console.log(
+          '[Paywall] Available packages:',
+          offerings.current?.availablePackages.map(
+            (p) => `${p.packageType} ${p.product.identifier} ${p.product.priceString}`
+          )
+        );
         const current = offerings.current;
         if (current) {
-          const annual = current.availablePackages.find(
-            (pkg) => pkg.packageType === PACKAGE_TYPE.ANNUAL
-          ) ?? null;
-          const monthly = current.availablePackages.find(
-            (pkg) => pkg.packageType === PACKAGE_TYPE.MONTHLY
-          ) ?? null;
+          const annual = current.annual ?? null;
+          const monthly = current.monthly ?? null;
           console.log(
             `[Paywall] Offerings loaded. Annual: ${annual?.product.priceString ?? 'none'}, Monthly: ${monthly?.product.priceString ?? 'none'}`
           );
@@ -181,9 +184,6 @@ export default function PaywallScreen() {
 
   const isBusy = purchasing || restoring;
 
-  const annualPrice = annualPkg?.product.priceString ?? '—';
-  const monthlyPrice = monthlyPkg?.product.priceString ?? '—';
-
   const annualRawPrice = annualPkg?.product.price ?? 0;
   const monthlyRawPrice = monthlyPkg?.product.price ?? 0;
   const savePercent =
@@ -250,44 +250,48 @@ export default function PaywallScreen() {
             </View>
           ) : (
             <View style={styles.planRow}>
-              {/* Monthly */}
-              <AnimatedPressable
-                style={[
-                  styles.planCard,
-                  isMonthly ? styles.planCardSelected : styles.planCardUnselected,
-                ]}
-                onPress={() => handleSelectPlan('monthly')}
-                scaleValue={0.96}
-                disabled={isBusy}
-              >
-                <View style={styles.planBadge}>
-                  <Text style={styles.planBadgeText}>Most Flexible</Text>
-                </View>
-                <Text style={styles.planPrice}>{monthlyPrice}</Text>
-                <Text style={styles.planPeriod}>/ month</Text>
-              </AnimatedPressable>
-
-              {/* Yearly */}
-              <AnimatedPressable
-                style={[
-                  styles.planCard,
-                  isYearly ? styles.planCardSelected : styles.planCardUnselected,
-                ]}
-                onPress={() => handleSelectPlan('yearly')}
-                scaleValue={0.96}
-                disabled={isBusy}
-              >
-                <View style={[styles.planBadge, styles.planBadgeBestValue]}>
-                  <Text style={[styles.planBadgeText, styles.planBadgeBestValueText]}>Best Value</Text>
-                </View>
-                <Text style={styles.planPrice}>{annualPrice}</Text>
-                <Text style={styles.planPeriod}>/ year</Text>
-                {savePercent !== null && savePercent > 0 && (
-                  <View style={styles.saveBadge}>
-                    <Text style={styles.saveBadgeText}>Save {savePercent}%</Text>
+              {/* Monthly — only shown when package loaded */}
+              {monthlyPkg !== null && (
+                <AnimatedPressable
+                  style={[
+                    styles.planCard,
+                    isMonthly ? styles.planCardSelected : styles.planCardUnselected,
+                  ]}
+                  onPress={() => handleSelectPlan('monthly')}
+                  scaleValue={0.96}
+                  disabled={isBusy}
+                >
+                  <View style={styles.planBadge}>
+                    <Text style={styles.planBadgeText}>Most Flexible</Text>
                   </View>
-                )}
-              </AnimatedPressable>
+                  <Text style={styles.planPrice}>{monthlyPkg.product.priceString}</Text>
+                  <Text style={styles.planPeriod}>/ month</Text>
+                </AnimatedPressable>
+              )}
+
+              {/* Yearly — only shown when package loaded */}
+              {annualPkg !== null && (
+                <AnimatedPressable
+                  style={[
+                    styles.planCard,
+                    isYearly ? styles.planCardSelected : styles.planCardUnselected,
+                  ]}
+                  onPress={() => handleSelectPlan('yearly')}
+                  scaleValue={0.96}
+                  disabled={isBusy}
+                >
+                  <View style={[styles.planBadge, styles.planBadgeBestValue]}>
+                    <Text style={[styles.planBadgeText, styles.planBadgeBestValueText]}>Best Value</Text>
+                  </View>
+                  <Text style={styles.planPrice}>{annualPkg.product.priceString}</Text>
+                  <Text style={styles.planPeriod}>/ year</Text>
+                  {savePercent !== null && savePercent > 0 && (
+                    <View style={styles.saveBadge}>
+                      <Text style={styles.saveBadgeText}>Save {savePercent}%</Text>
+                    </View>
+                  )}
+                </AnimatedPressable>
+              )}
             </View>
           )}
 
