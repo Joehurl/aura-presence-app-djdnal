@@ -19,7 +19,7 @@ import COLORS from '@/constants/Colors';
 import { PILLARS, ALL_LESSONS, type Pillar, type Lesson } from '@/constants/lessons';
 
 const YOUTUBE_VIDEO_ID = 'W3IYFLBssTM';
-const YOUTUBE_EMBED_URL = `https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?playsinline=1&autoplay=0`;
+const YOUTUBE_EMBED_URL = `https://www.youtube-nocookie.com/embed/${YOUTUBE_VIDEO_ID}?playsinline=1&autoplay=0&rel=0&modestbranding=1`;
 
 function YoutubePreviewCard() {
   const { width } = useWindowDimensions();
@@ -46,6 +46,9 @@ function YoutubePreviewCard() {
           allowsInlineMediaPlayback
           mediaPlaybackRequiresUserAction={false}
           javaScriptEnabled
+          originWhitelist={['*']}
+          allowsFullscreenVideo
+          scrollEnabled={false}
           onLoad={handleLoad}
           onError={handleError}
         />
