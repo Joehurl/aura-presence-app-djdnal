@@ -6,7 +6,9 @@ import {
   Animated,
   StyleSheet,
   FlatList,
+  useWindowDimensions,
 } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,6 +17,42 @@ import { AnimatedPressable } from '@/components/AnimatedPressable';
 import { NotificationBell } from "@/components/NotificationBell";
 import COLORS from '@/constants/Colors';
 import { PILLARS, ALL_LESSONS, type Pillar, type Lesson } from '@/constants/lessons';
+
+const YOUTUBE_VIDEO_ID = 'qsq8FMyo-J4';
+const YOUTUBE_EMBED_URL = `https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?playsinline=1&autoplay=0`;
+
+function YoutubePreviewCard() {
+  const { width } = useWindowDimensions();
+  const cardWidth = width - 40; // 20px horizontal padding each side
+  const cardHeight = Math.round(cardWidth * (9 / 16));
+
+  const handleLoad = () => {
+    console.log('[Home] YouTube preview WebView loaded:', YOUTUBE_EMBED_URL);
+  };
+
+  const handleError = (e: { nativeEvent: { description: string } }) => {
+    console.error('[Home] YouTube preview WebView error:', e.nativeEvent.description);
+  };
+
+  return (
+    <AnimatedListItem index={0}>
+      <View style={styles.sectionLabel}>
+        <Text style={styles.sectionLabelText}>Watch a Preview</Text>
+      </View>
+      <View style={[styles.videoCard, { shadowColor: '#000' }]}>
+        <WebView
+          source={{ uri: YOUTUBE_EMBED_URL }}
+          style={{ width: cardWidth, height: cardHeight, borderRadius: 14 }}
+          allowsInlineMediaPlayback
+          mediaPlaybackRequiresUserAction={false}
+          javaScriptEnabled
+          onLoad={handleLoad}
+          onError={handleError}
+        />
+      </View>
+    </AnimatedListItem>
+  );
+}
 
 interface OnboardingData {
   completed: boolean;
@@ -265,8 +303,11 @@ export default function LearnScreen() {
         </View>
       </Animated.View>
 
+      {/* YouTube Preview */}
+      <YoutubePreviewCard />
+
       {/* Today's Module */}
-      <AnimatedListItem index={0}>
+      <AnimatedListItem index={1}>
         <View style={styles.sectionLabel}>
           <Text style={styles.sectionLabelText}>Today's Module</Text>
         </View>
@@ -560,6 +601,16 @@ const styles = StyleSheet.create({
     fontFamily: 'DMSans_400Regular',
     color: COLORS.textSecondary,
     lineHeight: 17,
+  },
+  videoCard: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginBottom: 28,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 4,
+    backgroundColor: COLORS.surface,
   },
   // Skeleton
   skeletonHeader: {
